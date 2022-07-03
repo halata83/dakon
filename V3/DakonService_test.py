@@ -25,9 +25,12 @@ seru = serial.Serial('/dev/ttyS0', baudrate=9600,
                     parity=serial.PARITY_NONE,
                     stopbits=serial.STOPBITS_ONE,
                     bytesize=serial.EIGHTBITS, timeout = 1)
-if os.path.isfile(r"setup.dat"):
+dirname = os.path.dirname(__file__)
+filename = os.path.join(dirname, 'setup.dat')
+print (filename)
+if os.path.isfile(filename):
     print ("setup.dat existuje, načítam zařizeni..")
-    dev = loadSetupFile("setup.dat")
+    dev = loadSetupFile(filename)
     dev = dev.split("\n")
     for x in range(len(dev) -1 ):
         tmp = dev[x].split(",")

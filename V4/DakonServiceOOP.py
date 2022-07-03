@@ -13,9 +13,17 @@ from datetime import datetime
 from function import *
 from tridy import *
 from dict import *
-
+import configparser
 zarizeni = []
-dzurl = "http://192.168.1.107:1080/"
+
+dirname = os.path.dirname(__file__)
+setupfile = os.path.join(dirname, 'setup.dat')
+configfile = os.path.join(dirname, 'config.ini') 
+config = configparser.ConfigParser()
+config.read(configfile)
+dzurl = config["DEFAULT"]["domoticzurl"]
+useDZhttp = str2bool(config["DEFAULT"]["useDomoticzHttpApi"])
+
 start_time = time.time()
 last_time = start_time
 tsend = 5
@@ -25,12 +33,10 @@ print ("RS reading started...")
 #                    parity=serial.PARITY_NONE,
 #                    stopbits=serial.STOPBITS_ONE,
 #                    bytesize=serial.EIGHTBITS, timeout = 1)
-dirname = os.path.dirname(__file__)
-filename = os.path.join(dirname, 'setup.dat')
-print (filename)
-if os.path.isfile(filename):
+
+if os.path.isfile(setupfile):
     print ("setup.dat existuje, načítam zařizeni..")
-    dev = loadSetupFile(filename)
+    dev = loadSetupFile(setupfile)
     dev = dev.split("\n")
     for x in range(len(dev) -1 ):
         tmp = dev[x].split(",")
@@ -55,17 +61,17 @@ while True:
         #print (a)
 #---- otestuju dostupnost domoticz pokud neni pokracuju ve smyccse ----
         dzonline = dz_online(dzurl)
-        print (dzonline)
+        #print (dzonline)
         if (dzonline == False):
            continue
         for i in zarizeni:
             if (i.value_load_on_dz == "True"):
-                if (i.type == "temp"):
+                if (i.type == "settemp"):
                     valu = load_dz_data(dzurl+"json.htm?type=devices&rid="+str(i.idx),"SetPoint")
-                    print (valu)
-                if (i.type == "stav"):
+                    #print (valu)
+                if (i.type == "selswitch"):
                     valu = load_dz_data(dzurl+"json.htm?type=devices&rid="+str(i.idx),"Level")
-                    print (valu)
+                    #print (valu)
 
 
         a = "0226FFFA169E572D169F4B28157C0021157D00D2157E0032166E02941616002D158B00001681F83015CD00021620022516210002158900001587000015880000159B000001F60000028E0000029800000299000002450000157F00011610000002FC000001F9000003110000031200000288000002183A22"
@@ -89,6 +95,6 @@ while True:
                 break
         #zobrazData(zarizeni)
         posliDataPriZmene(zarizeni)
-        #last_time = posli_data_5m(akt_time,last_time,tsend,zarizeni)
-        #time.sleep(1)
+        last_time = posli_data_5m(akt_time,last_time,tsend,zarizeni)
+        time.sleep(1)
         
